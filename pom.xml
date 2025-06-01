@@ -22,11 +22,17 @@
         <module>module-voucher</module>
         <module>app-user</module>
         <module>module-user</module>
+        <module>module-core</module>
     </modules>
 
     <properties>
+        <hikari.version>4.0.1</hikari.version>
+        <io.swagger.version>2.2.30</io.swagger.version>
         <java.version>17</java.version>
+        <lombok.version>1.18.38</lombok.version>
+        <postgres.version>42.7.0</postgres.version>
         <springboot.version>3.5.0</springboot.version>
+        <springdoc.version>2.8.0</springdoc.version>
     </properties>
 
     <dependencyManagement>
@@ -45,6 +51,12 @@
 
             <dependency>
                 <groupId>com.boost</groupId>
+                <artifactId>module-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.boost</groupId>
                 <artifactId>module-voucher</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -53,6 +65,36 @@
                 <groupId>com.boost</groupId>
                 <artifactId>module-user</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgres.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikari.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>2.8.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${io.swagger.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
