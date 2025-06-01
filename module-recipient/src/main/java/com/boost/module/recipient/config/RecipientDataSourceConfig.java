@@ -1,39 +1,108 @@
 package com.boost.module.recipient.config;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import jakarta.persistence.SharedCacheMode;
+
 @Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(
+        basePackages = "com.boost.module.recipient.db",
+        entityManagerFactoryRef = "recipientEntityManagerFactory",
+        transactionManagerRef = "recipientTransactionManager"
+)
+@EntityScan(basePackages = "com.boost.module.recipient.db.entity")
 public class RecipientDataSourceConfig {
-    @Value("${recipient.db.datasource.url}")
-    private String url;
+    public static final String RECIPIENT_JDBC_TEMPLATE = "RECIPIENT_JDBC_TEMPLATE";
 
-    @Value("${recipient.db.datasource.username}")
-    private String username;
+    @Value("${recipient.db.dialect}")
+    public String hibernateDialect;
 
-    @Value("${recipient.db.datasource.password}")
-    private String password;
+    @Value("${recipient.db.ddl-auto}")
+    public String hibernateHbm2ddlAuto;
 
-    @Value("${recipient.db.datasource.driver.class.name}")
-    private String driverClassName;
+    private final Environment environment;
 
-    @Bean
-    public DataSource recipientDataSource() {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(url);
-        hikariConfig.setUsername(username);
-        hikariConfig.setPassword(password);
-        hikariConfig.setDriverClassName(driverClassName);
+    public RecipientDataSourceConfig(Environment environment) {
+        this.environment = environment;
+    }
 
-        hikariConfig.setMaximumPoolSize(10);
-        hikariConfig.setMinimumIdle(2);
-        hikariConfig.setPoolName("RecipientServiceHikariCP");
+    @Primary
+    @Bean("recipientDataSource")
+    public DataSource recipientDataSource(
+            @Value("${recipient.db.datasource.url}") final String url,
+            @Value("${recipient.db.datasource.username}") final String username,
+            @Value("${recipient.db.datasource.driver.class.name}") final String driverClassName,
+            @Value("${recipient.db.datasource.minIdle:10}") final int minIdle,
+            @Value("${recipient.db.datasource.max.pool.size:10}") final int maxPoolSize) {
 
-        return new HikariDataSource(hikariConfig);
+        HikariConfig dataSourceConfig = new HikariConfig();
+        dataSourceConfig.setMaximumPoolSize(maxPoolSize);
+        dataSourceConfig.setJdbcUrl(url);
+        dataSourceConfig.setUsername(username);
+        dataSourceConfig.setPassword(environment.getProperty("recipient.db.datasource.password"));
+        dataSourceConfig.setMinimumIdle(minIdle);
+        dataSourceConfig.setDriverClassName(driverClassName);
+
+        return new HikariDataSource(dataSourceConfig);
+    }
+
+    @Primary
+    @Bean("recipientEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean recipientEntityManagerFactory(
+            @Qualifier("recipientDataSource") final DataSource dataSource) {
+
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setPersistenceUnitName("BOOST.RECIPIENT.DB");
+        em.setSharedCacheMode(SharedCacheMode.ENABLE_SELECTIVE);
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        em.setJpaDialect(new HibernateJpaDialect());
+        em.setPackagesToScan("com.boost.module.recipient.db.entity");
+        em.setDataSource(dataSource);
+        em.setJpaProperties(additionalProperties());
+
+        return em;
+    }
+
+    private Properties additionalProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.dialect", hibernateDialect);
+        properties.setProperty("hibernate.hbm2ddl.auto", hibernateHbm2ddlAuto);
+        return properties;
+    }
+
+    @Primary
+    @Bean("recipientTransactionManager")
+    public PlatformTransactionManager recipientTransactionManager(
+            @Qualifier("recipientEntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+        JpaTransactionManager txManager = new JpaTransactionManager();
+        txManager.setEntityManagerFactory(entityManagerFactory.getObject());
+        return txManager;
+    }
+
+    @Bean(RECIPIENT_JDBC_TEMPLATE)
+    public JdbcTemplate jdbcTemplate(@Qualifier("recipientDataSource") final DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 }
