@@ -11,10 +11,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>module-user</artifactId>
+    <artifactId>module-recipient</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>module-user</name>
+    <name>module-recipient</name>
 
     <dependencies>
         <dependency>

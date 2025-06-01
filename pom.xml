@@ -20,8 +20,8 @@
     <modules>
         <module>app-voucher</module>
         <module>module-voucher</module>
-        <module>app-user</module>
-        <module>module-user</module>
+        <module>app-recipient</module>
+        <module>module-recipient</module>
         <module>module-core</module>
     </modules>
 
@@ -63,7 +63,7 @@
 
             <dependency>
                 <groupId>com.boost</groupId>
-                <artifactId>module-user</artifactId>
+                <artifactId>module-recipient</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

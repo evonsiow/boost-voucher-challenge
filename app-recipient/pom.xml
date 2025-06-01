@@ -11,10 +11,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>app-user</artifactId>
+    <artifactId>app-recipient</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>app-user</name>
+    <name>app-recipient</name>
 
     <dependencies>
         <dependency>
@@ -24,7 +24,7 @@
 
         <dependency>
             <groupId>com.boost</groupId>
-            <artifactId>module-user</artifactId>
+            <artifactId>module-recipient</artifactId>
         </dependency>
 
         <dependency>
