@@ -98,6 +98,8 @@ public class VoucherServiceTest {
         assertEquals(1, results.size());
         assertEquals("ABCD-EFGH-IJKL", results.get(0).getCode());
         assertEquals("Summer Sale", results.get(0).getOfferName());
+        assertEquals("john.doe@example.com", results.get(0).getRecipientEmail());
+        assertEquals("John Doe", results.get(0).getRecipientName());
         assertEquals(20, results.get(0).getDiscountPercentage());
     }
 

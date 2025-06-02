@@ -66,6 +66,11 @@ public class VoucherService {
             VoucherCodeDTO voucherCodeDTO = VoucherCodeDTO.map(savedVoucherVO);
 
             VoucherCodeResponseVM voucherCodeResponseVM = VoucherCodeResponseVM.map(voucherCodeDTO);
+            voucherCodeResponseVM.setRecipientEmail(recipientVM.getEmail());
+            voucherCodeResponseVM.setRecipientName(recipientVM.getName());
+            voucherCodeResponseVM.setOfferName(specialOfferDTO.getName());
+            voucherCodeResponseVM.setDiscountPercentage(specialOfferDTO.getDiscountPercentage());
+
             voucherCodeResponseVMList.add(voucherCodeResponseVM);
         }
         return voucherCodeResponseVMList;
