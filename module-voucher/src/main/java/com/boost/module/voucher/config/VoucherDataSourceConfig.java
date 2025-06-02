@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -20,8 +19,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
-import jakarta.persistence.SharedCacheMode;
 
 @Configuration
 @EnableTransactionManagement
@@ -42,27 +39,18 @@ public class VoucherDataSourceConfig {
     @Value("${voucher.db.ddl-auto}")
     private String hibernateHbm2ddlAuto;
 
-    private final Environment environment;
-
-    public VoucherDataSourceConfig(Environment environment) {
-        this.environment = environment;
-    }
-
     @Bean("voucherDataSource")
     public DataSource voucherDataSource(
             @Value("${voucher.db.datasource.url}") String url,
             @Value("${voucher.db.datasource.username}") String username,
-            @Value("${voucher.db.datasource.driver.class.name}") String driverClassName,
-            @Value("${voucher.db.datasource.minIdle:10}") int minIdle,
-            @Value("${voucher.db.datasource.max.pool.size:10}") int maxPoolSize) {
+            @Value("${voucher.db.datasource.password}") String password,
+            @Value("${voucher.db.datasource.driver.class.name}") String driverClassName) {
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
-        config.setPassword(environment.getProperty("voucher.db.datasource.password"));
+        config.setPassword(password);
         config.setDriverClassName(driverClassName);
-        config.setMinimumIdle(minIdle);
-        config.setMaximumPoolSize(maxPoolSize);
 
         return new HikariDataSource(config);
     }
@@ -76,7 +64,6 @@ public class VoucherDataSourceConfig {
         factoryBean.setPersistenceUnitName("BOOST.VOUCHER.DB");
         factoryBean.setPackagesToScan(ENTITY_PACKAGE);
         factoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        factoryBean.setSharedCacheMode(SharedCacheMode.ENABLE_SELECTIVE);
 
         Properties jpaProperties = new Properties();
         jpaProperties.setProperty("hibernate.dialect", hibernateDialect);

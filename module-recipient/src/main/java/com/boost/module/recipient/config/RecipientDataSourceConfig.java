@@ -22,8 +22,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import jakarta.persistence.SharedCacheMode;
-
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
@@ -53,16 +51,13 @@ public class RecipientDataSourceConfig {
     public DataSource recipientDataSource(
             @Value("${recipient.db.datasource.url}") final String url,
             @Value("${recipient.db.datasource.username}") final String username,
-            @Value("${recipient.db.datasource.driver.class.name}") final String driverClassName,
-            @Value("${recipient.db.datasource.minIdle:10}") final int minIdle,
-            @Value("${recipient.db.datasource.max.pool.size:10}") final int maxPoolSize) {
+            @Value("${recipient.db.datasource.password}") final String password,
+            @Value("${recipient.db.datasource.driver.class.name}") final String driverClassName) {
 
         HikariConfig dataSourceConfig = new HikariConfig();
-        dataSourceConfig.setMaximumPoolSize(maxPoolSize);
         dataSourceConfig.setJdbcUrl(url);
         dataSourceConfig.setUsername(username);
-        dataSourceConfig.setPassword(environment.getProperty("recipient.db.datasource.password"));
-        dataSourceConfig.setMinimumIdle(minIdle);
+        dataSourceConfig.setPassword(password);
         dataSourceConfig.setDriverClassName(driverClassName);
 
         return new HikariDataSource(dataSourceConfig);
@@ -75,7 +70,6 @@ public class RecipientDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setPersistenceUnitName("BOOST.RECIPIENT.DB");
-        em.setSharedCacheMode(SharedCacheMode.ENABLE_SELECTIVE);
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         em.setPackagesToScan(ENTITY_PACKAGE);
         em.setDataSource(dataSource);
