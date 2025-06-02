@@ -5,8 +5,11 @@ import com.boost.module.voucher.model.ValidateVoucherRequestVM;
 import com.boost.module.voucher.model.VoucherCodeResponseVM;
 import com.boost.module.voucher.model.VoucherCodeRequestVM;
 import com.boost.module.voucher.model.ValidateVoucherResponseVM;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +24,11 @@ public interface VoucherAPI {
     ResponseEntity<ApiResponse<List<VoucherCodeResponseVM>>> generateVoucherCodes(
             @Valid @RequestBody VoucherCodeRequestVM voucherCodeRequestVM);
 
-    @PostMapping("/validate")
+    @PostMapping
     ResponseEntity<ApiResponse<ValidateVoucherResponseVM>> validateVoucher(
             @Valid @RequestBody ValidateVoucherRequestVM validateVoucherRequestVM);
+
+    @GetMapping
+    ResponseEntity<ApiResponse<List<VoucherCodeResponseVM>>> getValidVouchersForRecipient(
+            @Parameter(description = "Email of the recipient") @PathVariable String email);
 }

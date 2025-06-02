@@ -27,7 +27,7 @@ public class RecipientService {
             throw new IllegalArgumentException(ExceptionConstant.Exception.DUPLICATE_EMAIL_EXCEPTION.getExceptionMessage());
         }
 
-        // Create new recipient
+        // Create a new recipient
         RecipientVO recipientVO = new RecipientVO();
         recipientVO.setName(recipientRequestVM.getName());
         recipientVO.setEmail(recipientRequestVM.getEmail());
@@ -45,13 +45,6 @@ public class RecipientService {
     }
 
     @Transactional(readOnly = true)
-    public RecipientDTO getRecipientById(UUID id) {
-        RecipientVO recipientVO = recipientRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage()));
-        return RecipientDTO.map(recipientVO);
-    }
-
-    @Transactional(readOnly = true)
     public RecipientDTO getRecipientByEmail(String email) {
         RecipientVO recipientVO = recipientRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage()));
@@ -62,7 +55,7 @@ public class RecipientService {
         RecipientVO recipientVO = recipientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage()));
 
-        // Check if email is being changed and if new email already exists
+        // Check if the email is being changed and if a new email already exists
         if (!recipientVO.getEmail().equals(recipientRequestVM.getEmail()) &&
                 recipientRepository.existsByEmailAndIdNot(recipientRequestVM.getEmail(), id)) {
             throw new IllegalArgumentException(ExceptionConstant.Exception.DUPLICATE_EMAIL_EXCEPTION.getExceptionMessage());

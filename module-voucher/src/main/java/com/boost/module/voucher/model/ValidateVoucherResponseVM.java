@@ -6,18 +6,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ValidateVoucherResponseVM {
-    private boolean valid;
+    private Boolean isValid;
     private Integer discountPercentage;
-    private String message;
-    private String offerName;
+    private String recipientEmail;
 
     public ValidateVoucherResponseVM() {
     }
 
-    public ValidateVoucherResponseVM(boolean valid, Integer discountPercentage, String message, String offerName) {
-        this.valid = valid;
+    public ValidateVoucherResponseVM(Boolean isValid, Integer discountPercentage, String recipientEmail) {
+        this.isValid = isValid;
         this.discountPercentage = discountPercentage;
-        this.message = message;
-        this.offerName = offerName;
+        this.recipientEmail = recipientEmail;
     }
 }

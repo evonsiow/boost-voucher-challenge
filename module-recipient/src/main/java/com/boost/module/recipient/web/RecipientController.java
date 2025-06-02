@@ -53,15 +53,6 @@ public class RecipientController extends AbstractCommonController implements Rec
         return successResponse(recipientResponseVMList);
     }
 
-//    @GetMapping("/{id}")
-//    @Operation(summary = "Get recipient by ID", description = "Retrieves a recipient by their ID")
-//    public ResponseEntity<ApiResponse<RecipientResponseVM>> getRecipientById(
-//            @Parameter(description = "ID of the recipient") @PathVariable UUID id) {
-//        RecipientDTO recipientDTO = recipientService.getRecipientById(id);
-//        RecipientResponseVM recipientResponseVM = RecipientResponseVM.map(recipientDTO);
-//        return successResponse(recipientResponseVM);
-//    }
-
     @Override
     @GetMapping("/{email}")
     @Operation(summary = "Get recipient by email", description = "Retrieves a recipient by their email address")

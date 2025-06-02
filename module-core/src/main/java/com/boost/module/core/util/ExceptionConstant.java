@@ -10,7 +10,12 @@ public class ExceptionConstant {
         INVALID_RECIPIENT_EXCEPTION("ERR1003", "Recipient not found.", "Recipient not found."),
         DUPLICATE_SPECIAL_OFFER_EXCEPTION("ERR1004", "Special offer name exists.", "Special offer name exists."),
         INVALID_SPECIAL_OFFER_EXCEPTION("ERR1005", "Special offer not found.", "Special offer not found."),
-        ERROR_USER_MS_EXCEPTION("ERR1006", "User MS is down.", "User MS is down.");
+        ERROR_USER_MS_EXCEPTION("ERR1006", "User MS is down.", "User MS is down."),
+        INVALID_VOUCHER_CODE_EXCEPTION("ERR1007", "Voucher code not found.", "Voucher code not found."),
+        INVALID_VOUCHER_RECIPIENT_EXCEPTION("ERR1008", "This voucher code is not assigned to the provided email.", "This voucher code is not assigned to the provided email."),
+        USED_VOUCHER_EXCEPTION("ERR1009", "This voucher has already been used.", "This voucher has already been used."),
+        EXPIRED_VOUCHER_EXCEPTION("ERR1010", "This voucher has already been expired.", "This voucher has already been expired.");
+
 
         private final String code;
 

@@ -27,10 +27,6 @@ public interface RecipientAPI {
     @GetMapping
     ResponseEntity<ApiResponse<List<RecipientResponseVM>>> getAllRecipients();
 
-//    @GetMapping
-//    ResponseEntity<ApiResponse<RecipientResponseVM>> getRecipientById(
-//            @Parameter(description = "ID of the recipient") @PathVariable UUID id);
-
     @GetMapping
     ResponseEntity<ApiResponse<RecipientResponseVM>> getRecipientByEmail(
             @Parameter(description = "Email of the recipient") @PathVariable String email);

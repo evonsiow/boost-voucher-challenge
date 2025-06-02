@@ -7,7 +7,6 @@ import com.boost.module.voucher.db.VoucherCodeRepository;
 import com.boost.module.voucher.db.entity.VoucherCodeVO;
 import com.boost.module.voucher.dto.SpecialOfferDTO;
 import com.boost.module.voucher.dto.VoucherCodeDTO;
-import com.boost.module.voucher.model.SpecialOfferResponseVM;
 import com.boost.module.voucher.model.ValidateVoucherRequestVM;
 import com.boost.module.voucher.model.ValidateVoucherResponseVM;
 import com.boost.module.voucher.model.VoucherCodeRequestVM;
@@ -72,39 +71,71 @@ public class VoucherService {
         return voucherCodeResponseVMList;
     }
 
-//    public ValidateVoucherResponseVM validateVoucher(ValidateVoucherRequestVM validateVoucherRequestVM) {
-//        // Find voucher by code
-//        VoucherCodeVO voucher = voucherCodeRepository.findByCode(validateVoucherRequestVM.getCode())
-//                .orElseThrow(() -> new IllegalArgumentException("Voucher code not found: " + validateVoucherRequestVM.getCode()));
-//
-//        // Get recipient and offer details
-//        RecipientVM recipient = recipientServiceClient.getRecipientByEmail(validateVoucherRequestVM.getEmail());
-//        if (recipient == null) {
-//            return VoucherValidationResponseVM.invalid("Recipient not found with email: " + validateVoucherRequestVM.getEmail());
-//        }
-//
-//        // Check if email matches the voucher recipient
-//        if (!voucher.getRecipientId().equals(recipient.getId())) {
-//            throw new RecipientMismatchException("This voucher code is not assigned to the provided email");
-//        }
-//
-//        // Check if already used
-//        if (voucher.isUsed()) {
-//            throw new VoucherAlreadyUsedException("This voucher has already been used on " + voucher.getUsedDate());
-//        }
-//
-//        // Check if expired
-//        if (voucher.isExpired()) {
-//            throw new VoucherExpiredException("This voucher expired on " + voucher.getExpirationDate());
-//        }
-//
-//        // Get offer details
-//        SpecialOfferDTO offer = specialOfferService.getOfferById(voucher.getSpecialOfferId());
-//
-//        // Mark voucher as used
-//        voucher.setUsedDate(LocalDateTime.now());
-//        voucherCodeRepository.save(voucher);
-//
-//        return VoucherValidationResponseVM.valid(offer.getDiscountPercentage(), offer.getName());
-//    }
+    public ValidateVoucherResponseVM validateVoucher(ValidateVoucherRequestVM validateVoucherRequestVM) {
+        // Find voucher by code
+        VoucherCodeVO voucherCodeVO = voucherCodeRepository.findByCode(validateVoucherRequestVM.getCode())
+                .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_VOUCHER_CODE_EXCEPTION.getExceptionMessage()));
+
+        VoucherCodeDTO voucherCodeDTO = VoucherCodeDTO.map(voucherCodeVO);
+
+        // Get recipient and offer details
+        RecipientVM recipientVM = recipientServiceClient.getRecipientByEmail(validateVoucherRequestVM.getEmail());
+        if (recipientVM == null) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage());
+        }
+
+        // Check if email matches the voucher recipient
+        if (!voucherCodeDTO.getRecipientId().equals(recipientVM.getId())) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.INVALID_VOUCHER_RECIPIENT_EXCEPTION.getExceptionMessage());
+        }
+
+        // Check if already used
+        if (voucherCodeDTO.isUsed()) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.USED_VOUCHER_EXCEPTION.getExceptionMessage());
+        }
+
+        // Check if expired
+        if (voucherCodeDTO.isExpired()) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.EXPIRED_VOUCHER_EXCEPTION.getExceptionMessage());
+        }
+
+        // Get offer details
+        SpecialOfferDTO specialOfferDTO = specialOfferService.getOfferById(voucherCodeVO.getSpecialOfferId());
+
+        // Mark voucher as used
+        voucherCodeVO.setUsedDate(LocalDateTime.now());
+        voucherCodeRepository.save(voucherCodeVO);
+
+        return new ValidateVoucherResponseVM(true, specialOfferDTO.getDiscountPercentage(), specialOfferDTO.getName());
+    }
+
+    @Transactional(readOnly = true)
+    public List<VoucherCodeResponseVM> getValidVouchersForRecipient(String email) {
+        // Get recipient
+        RecipientVM recipientVM = recipientServiceClient.getRecipientByEmail(email);
+        if (recipientVM == null) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage());
+        }
+
+        // Get valid vouchers (not used and not expired)
+        List<VoucherCodeVO> validVoucherVOList = voucherCodeRepository
+                .findByRecipientIdAndUsedDateIsNullAndExpirationDateAfter(recipientVM.getId(), LocalDateTime.now());
+
+        List<VoucherCodeDTO> validVoucherDTOList = validVoucherVOList.stream().map(VoucherCodeDTO::map).toList();
+
+        List<VoucherCodeResponseVM> voucherCodeResponseVMList = new ArrayList<>();
+
+        for (VoucherCodeDTO voucherCodeDTO : validVoucherDTOList) {
+            VoucherCodeResponseVM voucherCodeResponseVM = VoucherCodeResponseVM.map(voucherCodeDTO);
+
+            voucherCodeResponseVM.setRecipientEmail(recipientVM.getEmail());
+            voucherCodeResponseVM.setRecipientName(recipientVM.getName());
+
+            SpecialOfferDTO specialOfferDTO = specialOfferService.getOfferById(voucherCodeDTO.getSpecialOfferId());
+            voucherCodeResponseVM.setOfferName(specialOfferDTO.getName());
+            voucherCodeResponseVM.setDiscountPercentage(specialOfferDTO.getDiscountPercentage());
+            voucherCodeResponseVMList.add(voucherCodeResponseVM);
+        }
+        return voucherCodeResponseVMList;
+    }
 }
