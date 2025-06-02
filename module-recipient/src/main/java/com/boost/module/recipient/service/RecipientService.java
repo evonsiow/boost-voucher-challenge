@@ -1,13 +1,15 @@
 package com.boost.module.recipient.service;
 
+import com.boost.module.core.util.ExceptionConstant;
 import com.boost.module.recipient.db.RecipientRepository;
 import com.boost.module.recipient.db.entity.RecipientVO;
 import com.boost.module.recipient.dto.RecipientDTO;
-import com.boost.module.recipient.model.RecipientCreationRequestVM;
+import com.boost.module.recipient.model.RecipientRequestVM;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,16 +21,16 @@ public class RecipientService {
         this.recipientRepository = recipientRepository;
     }
 
-    public RecipientDTO createRecipient(RecipientCreationRequestVM recipientCreationRequestVM) {
+    public RecipientDTO createRecipient(RecipientRequestVM recipientRequestVM) {
         // Check if email already exists
-        if (recipientRepository.existsByEmail(recipientCreationRequestVM.getEmail())) {
-            throw new IllegalArgumentException("Email already exists: " + recipientCreationRequestVM.getEmail());
+        if (recipientRepository.existsByEmail(recipientRequestVM.getEmail())) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.DUPLICATE_EMAIL_EXCEPTION.getExceptionMessage());
         }
 
         // Create new recipient
         RecipientVO recipientVO = new RecipientVO();
-        recipientVO.setName(recipientCreationRequestVM.getName());
-        recipientVO.setEmail(recipientCreationRequestVM.getEmail());
+        recipientVO.setName(recipientRequestVM.getName());
+        recipientVO.setEmail(recipientRequestVM.getEmail());
 
         // Save and convert to DTO
         RecipientVO savedRecipientVO = recipientRepository.save(recipientVO);
@@ -43,9 +45,41 @@ public class RecipientService {
     }
 
     @Transactional(readOnly = true)
+    public RecipientDTO getRecipientById(UUID id) {
+        RecipientVO recipientVO = recipientRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage()));
+        return RecipientDTO.map(recipientVO);
+    }
+
+    @Transactional(readOnly = true)
     public RecipientDTO getRecipientByEmail(String email) {
         RecipientVO recipientVO = recipientRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Recipient not found with email: " + email));
+                .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage()));
         return RecipientDTO.map(recipientVO);
+    }
+
+    public RecipientDTO updateRecipient(UUID id, RecipientRequestVM recipientRequestVM) {
+        RecipientVO recipientVO = recipientRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage()));
+
+        // Check if email is being changed and if new email already exists
+        if (!recipientVO.getEmail().equals(recipientRequestVM.getEmail()) &&
+                recipientRepository.existsByEmailAndIdNot(recipientRequestVM.getEmail(), id)) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.DUPLICATE_EMAIL_EXCEPTION.getExceptionMessage());
+        }
+
+        recipientVO.setName(recipientRequestVM.getName());
+        recipientVO.setEmail(recipientRequestVM.getEmail());
+
+        RecipientVO savedRecipientVO = recipientRepository.save(recipientVO);
+        return RecipientDTO.map(savedRecipientVO);
+    }
+
+    public Boolean deleteRecipient(UUID id) {
+        if (!recipientRepository.existsById(id)) {
+            throw new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_EXCEPTION.getExceptionMessage());
+        }
+        recipientRepository.deleteById(id);
+        return true;
     }
 }

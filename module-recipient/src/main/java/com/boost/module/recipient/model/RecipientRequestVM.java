@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RecipientCreationRequestVM {
+public class RecipientRequestVM {
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -15,10 +15,10 @@ public class RecipientCreationRequestVM {
     @Email(message = "Email should be valid")
     private String email;
 
-    public RecipientCreationRequestVM() {
+    public RecipientRequestVM() {
     }
 
-    public RecipientCreationRequestVM(String name, String email) {
+    public RecipientRequestVM(String name, String email) {
         this.name = name;
         this.email = email;
     }

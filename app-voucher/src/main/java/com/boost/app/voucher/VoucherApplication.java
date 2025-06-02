@@ -7,7 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-@SpringBootApplication(scanBasePackages = {"com.boost.app.voucher", "com.boost.module.voucher"})
+@SpringBootApplication(scanBasePackages = {"com.boost.app.voucher", "com.boost.module.voucher", "com.boost.module.core"})
 @OpenAPIDefinition(info = @Info(title = "Voucher MS Rest API"))
 public class VoucherApplication {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(VoucherApplication.class);
