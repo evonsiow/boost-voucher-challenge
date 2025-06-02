@@ -39,7 +39,7 @@ public class RecipientServiceClient {
             // Treat any 4xx error as "not found"
             return null;
         } catch (Exception e) {
-            throw new IllegalArgumentException(ExceptionConstant.Exception.ERROR_USER_MS_EXCEPTION.getExceptionMessage());
+            throw new IllegalArgumentException(ExceptionConstant.Exception.INVALID_RECIPIENT_MS_EXCEPTION.getExceptionMessage());
         }
     }
 }
