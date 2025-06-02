@@ -31,7 +31,8 @@ public class RecipientServiceClient {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<ApiResponse<RecipientVM>>() {}
+                    new ParameterizedTypeReference<ApiResponse<RecipientVM>>() {
+                    }
             );
             return response.getBody() != null ? response.getBody().getData() : null;
         } catch (HttpClientErrorException e) {

@@ -21,27 +21,27 @@ public class RecipientVO {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
-    
+
     @NotBlank(message = "Name is required")
     @Column(name = "name", nullable = false)
     private String name;
-    
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Column(name = "email", nullable = false, unique = true)
     private String email;
-    
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-    
+
     public RecipientVO() {
     }
-    
+
     public RecipientVO(String name, String email) {
         this.name = name;
         this.email = email;

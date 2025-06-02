@@ -15,7 +15,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -35,12 +34,13 @@ import jakarta.persistence.SharedCacheMode;
 @EntityScan(basePackages = "com.boost.module.recipient.db.entity")
 public class RecipientDataSourceConfig {
     public static final String RECIPIENT_JDBC_TEMPLATE = "RECIPIENT_JDBC_TEMPLATE";
+    private static final String ENTITY_PACKAGE = "com.boost.module.recipient.db.entity";
 
     @Value("${recipient.db.dialect}")
-    public String hibernateDialect;
+    private String hibernateDialect;
 
     @Value("${recipient.db.ddl-auto}")
-    public String hibernateHbm2ddlAuto;
+    private String hibernateHbm2ddlAuto;
 
     private final Environment environment;
 
@@ -77,28 +77,22 @@ public class RecipientDataSourceConfig {
         em.setPersistenceUnitName("BOOST.RECIPIENT.DB");
         em.setSharedCacheMode(SharedCacheMode.ENABLE_SELECTIVE);
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        em.setJpaDialect(new HibernateJpaDialect());
-        em.setPackagesToScan("com.boost.module.recipient.db.entity");
+        em.setPackagesToScan(ENTITY_PACKAGE);
         em.setDataSource(dataSource);
-        em.setJpaProperties(additionalProperties());
+
+        Properties jpaProperties = new Properties();
+        jpaProperties.setProperty("hibernate.dialect", hibernateDialect);
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", hibernateHbm2ddlAuto);
+        em.setJpaProperties(jpaProperties);
 
         return em;
-    }
-
-    private Properties additionalProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.dialect", hibernateDialect);
-        properties.setProperty("hibernate.hbm2ddl.auto", hibernateHbm2ddlAuto);
-        return properties;
     }
 
     @Primary
     @Bean("recipientTransactionManager")
     public PlatformTransactionManager recipientTransactionManager(
             @Qualifier("recipientEntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-        JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory.getObject());
-        return txManager;
+        return new JpaTransactionManager(entityManagerFactory.getObject());
     }
 
     @Bean(RECIPIENT_JDBC_TEMPLATE)

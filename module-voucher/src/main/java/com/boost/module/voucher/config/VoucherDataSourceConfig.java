@@ -14,7 +14,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -35,6 +34,7 @@ import jakarta.persistence.SharedCacheMode;
 public class VoucherDataSourceConfig {
 
     public static final String VOUCHER_JDBC_TEMPLATE = "VOUCHER_JDBC_TEMPLATE";
+    private static final String ENTITY_PACKAGE = "com.boost.module.voucher.db.entity";
 
     @Value("${voucher.db.dialect}")
     private String hibernateDialect;
@@ -74,29 +74,22 @@ public class VoucherDataSourceConfig {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(dataSource);
         factoryBean.setPersistenceUnitName("BOOST.VOUCHER.DB");
-        factoryBean.setPackagesToScan("com.boost.module.voucher.db.entity");
+        factoryBean.setPackagesToScan(ENTITY_PACKAGE);
         factoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        factoryBean.setJpaDialect(new HibernateJpaDialect());
         factoryBean.setSharedCacheMode(SharedCacheMode.ENABLE_SELECTIVE);
-        factoryBean.setJpaProperties(additionalProperties());
+
+        Properties jpaProperties = new Properties();
+        jpaProperties.setProperty("hibernate.dialect", hibernateDialect);
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", hibernateHbm2ddlAuto);
+        factoryBean.setJpaProperties(jpaProperties);
 
         return factoryBean;
-    }
-
-    private Properties additionalProperties() {
-        Properties props = new Properties();
-        props.setProperty("hibernate.dialect", hibernateDialect);
-        props.setProperty("hibernate.hbm2ddl.auto", hibernateHbm2ddlAuto);
-        return props;
     }
 
     @Bean("voucherTransactionManager")
     public PlatformTransactionManager voucherTransactionManager(
             @Qualifier("voucherEntityManagerFactory") LocalContainerEntityManagerFactoryBean factoryBean) {
-
-        JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(factoryBean.getObject());
-        return txManager;
+        return new JpaTransactionManager(factoryBean.getObject());
     }
 
     @Bean(VOUCHER_JDBC_TEMPLATE)
